@@ -1,0 +1,49 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.course-list {
+    margin-top: 1.5rem;
+}
+
+.course-item {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.course-item strong {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.course-item button {
+    margin-right: 10px;
+}
+
+/* @media print: 隱藏不需要列印的部分 */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #courseList, #courseList * {
+        visibility: visible;
+    }
+    #courseList {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+}

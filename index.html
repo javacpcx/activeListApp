@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>課表系統</title>
+    <!-- 引入 Bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #courseList, #courseList * {
+                visibility: visible;
+            }
+            #courseList {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        }
+        /* 美化按鈕排列 */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">課表系統</h1>
+
+        <!-- 將按鈕集中到標題下方一排 -->
+        <div class="action-buttons">
+            <button id="saveJsonBtn" class="btn btn-success">儲存為 JSON 檔案</button>
+            <button id="printPdfBtn" class="btn btn-secondary">預覽並列印 PDF</button>
+            <button id="loadJsonBtn" class="btn btn-info">讀取 JSON 檔案</button>
+            <button id="maintainCourseBtn" class="btn btn-warning" data-toggle="modal" data-target="#maintainModal">維護課表</button>
+        </div>
+
+        <!-- 課表相關表單 -->
+        <div class="form-group">
+            <label for="category">選擇大類:</label>
+            <select id="category" class="form-control">
+                <option value="">請選擇大類</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="subCategory">選擇小類:</label>
+            <select id="subCategory" class="form-control" disabled>
+                <option value="">請先選擇大類</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="time">選擇上課時間:</label>
+            <input type="time" id="time" step="1800" class="form-control">
+        </div>
+
+        <button id="addCourseBtn" class="btn btn-primary btn-block">新增課程</button>
+
+        <h2 class="mt-5">課程列表</h2>
+        <div class="course-list" id="courseList"></div>
+
+        <!-- 隱藏的檔案輸入 -->
+        <input type="file" id="loadJsonInput" accept=".json" class="form-control-file d-none">
+
+        <!-- 維護課表 Modal (模態視窗) -->
+        <div class="modal fade" id="maintainModal" tabindex="-1" role="dialog" aria-labelledby="maintainModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="maintainModalLabel">維護課表</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- 課表管理表格 -->
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>節次</th>
+                                    <th>大類</th>
+                                    <th>小類</th>
+                                    <th>時間</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="maintainTableBody">
+                                <!-- 資料將由 JavaScript 動態填入 -->
+                            </tbody>
+                        </table>
+                        <!-- 新增/修改用的表單 -->
+                        <div class="form-group">
+                            <label for="modalCategory">選擇大類:</label>
+                            <select id="modalCategory" class="form-control">
+                                <option value="">請選擇大類</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalSubCategory">選擇小類:</label>
+                            <select id="modalSubCategory" class="form-control" disabled>
+                                <option value="">請先選擇大類</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalTime">選擇上課時間:</label>
+                            <input type="time" id="modalTime" step="1800" class="form-control">
+                        </div>
+                        <button id="saveMaintainBtn" class="btn btn-primary btn-block">儲存修改</button>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="addMaintainCourseBtn" class="btn btn-success">新增課程</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+                        <button id="saveJsonMaintainBtn" class="btn btn-warning">儲存到 courses.json</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入 Bootstrap JS & jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

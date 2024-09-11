@@ -1,0 +1,25 @@
+{
+  "categories": [
+      {
+          "name": "藝術",
+          "subCategories": [
+              { "name": "繪畫", "description": "學習基礎繪畫技巧" },
+              { "name": "雕塑", "description": "探索雕塑的藝術形式" }
+          ]
+      },
+      {
+          "name": "理科",
+          "subCategories": [
+              { "name": "數學", "description": "學習代數與幾何" },
+              { "name": "物理", "description": "探索物理的基本原理" }
+          ]
+      },
+      {
+          "name": "文學",
+          "subCategories": [
+              { "name": "現代文學", "description": "閱讀並分析現代小說" },
+              { "name": "古典文學", "description": "學習經典文學作品" }
+          ]
+      }
+  ]
+}
