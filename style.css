@@ -47,3 +47,23 @@ h1 {
         left: 0;
     }
 }
+ @media print {
+            body * {
+                visibility: hidden;
+            }
+            #courseList, #courseList * {
+                visibility: visible;
+            }
+            #courseList {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        }
+        /* 美化按鈕排列 */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }

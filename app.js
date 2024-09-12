@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", function() {
     let courseData;
-    let selectedCategory = null;
-    let selectedSubCategory = null;
+    let courses = [];
+    let editingIndex = -1;
+
     const categorySelect = document.getElementById('category');
     const subCategorySelect = document.getElementById('subCategory');
     const timeInput = document.getElementById('time');
@@ -9,18 +10,18 @@ document.addEventListener("DOMContentLoaded", function() {
     const addCourseBtn = document.getElementById('addCourseBtn');
     const saveJsonBtn = document.getElementById('saveJsonBtn');
     const printPdfBtn = document.getElementById('printPdfBtn');
-    const loadJsonInput = document.getElementById('loadJsonInput');
     const loadJsonBtn = document.getElementById('loadJsonBtn');
-    const maintainCourseBtn = document.getElementById('maintainCourseBtn');
-    const maintainTableBody = document.getElementById('maintainTableBody');
-    const saveMaintainBtn = document.getElementById('saveMaintainBtn');
-    const addMaintainCourseBtn = document.getElementById('addMaintainCourseBtn');
-    const saveJsonMaintainBtn = document.getElementById('saveJsonMaintainBtn');
-    let courses = []; // 儲存課程列表
-    let editingIndex = -1; // 用來追蹤當前是否在編輯模式
+    const loadJsonInput = document.getElementById('loadJsonInput');
+
+    // Modal 的元素
+    const modalCategorySelect = document.getElementById('modalCategory');
+    const modalSubCategorySelect = document.getElementById('modalSubCategory');
+    const modalTimeInput = document.getElementById('modalTime');
+    const editModal = new bootstrap.Modal(document.getElementById('editModal'), { keyboard: false });
+    const saveEditBtn = document.getElementById('saveEditBtn');
 
     // 載入JSON課程資料
-    fetch('courses.json')
+    fetch('./courses.json')
         .then(response => response.json())
         .then(data => {
             courseData = data;
@@ -34,56 +35,59 @@ document.addEventListener("DOMContentLoaded", function() {
             option.value = index;
             option.textContent = category.name;
             categorySelect.appendChild(option);
+            modalCategorySelect.appendChild(option.cloneNode(true)); // 同步到 modal 的選單
         });
     }
 
     // 當選擇大類時，填充小類選單
     categorySelect.addEventListener('change', function() {
-        const categoryIndex = this.value;
-        selectedCategory = courseData.categories[categoryIndex];
-        subCategorySelect.innerHTML = '<option value="">請選擇小類</option>';
-        subCategorySelect.disabled = false;
+        updateSubCategories(categorySelect, subCategorySelect);
+    });
 
-        selectedCategory.subCategories.forEach((subCategory, index) => {
+    // Modal 中的大類選單變更時，更新小類選單
+    modalCategorySelect.addEventListener('change', function() {
+        updateSubCategories(modalCategorySelect, modalSubCategorySelect);
+    });
+
+    // 更新小類選單
+    function updateSubCategories(categoryElement, subCategoryElement) {
+        const categoryIndex = categoryElement.value;
+        const selectedCategory = courseData.categories[categoryIndex];
+        subCategoryElement.innerHTML = '<option value="">請選擇小類</option>';
+
+        selectedCategory.subCategories.forEach(subCategory => {
             const option = document.createElement('option');
-            option.value = index;
+            option.value = subCategory.name;
             option.textContent = subCategory.name;
-            subCategorySelect.appendChild(option);
+            subCategoryElement.appendChild(option);
         });
-    });
+        subCategoryElement.disabled = false;
+    }
 
-    // 當選擇小類時，保存選擇的小類
-    subCategorySelect.addEventListener('change', function() {
-        const subCategoryIndex = this.value;
-        selectedSubCategory = selectedCategory.subCategories[subCategoryIndex];
-    });
-
-    // 新增或修改課程
+    // 新增課程
     addCourseBtn.addEventListener('click', function() {
-        if (!selectedCategory || !selectedSubCategory || !timeInput.value) {
+        if (!categorySelect.value || !subCategorySelect.value || !timeInput.value) {
             alert('請選擇完整的課程與時間');
             return;
         }
 
         const course = {
-            id: editingIndex === -1 ? courses.length + 1 : courses[editingIndex].id, // 保留或分配節次
-            category: selectedCategory.name,
-            subCategory: selectedSubCategory.name,
+            id: editingIndex === -1 ? courses.length + 1 : courses[editingIndex].id,
+            category: courseData.categories[categorySelect.value].name,
+            subCategory: subCategorySelect.value,
             time: timeInput.value
         };
 
         if (editingIndex === -1) {
-            // 新增課程
             courses.push(course);
         } else {
-            // 修改課程
             courses[editingIndex] = course;
-            editingIndex = -1; // 重置編輯模式
-            addCourseBtn.textContent = "新增課程"; // 恢復按鈕文字
+            editingIndex = -1;
+            addCourseBtn.textContent = "新增課程";
         }
 
         clearForm();
-        renderCourses(); // 渲染課程並保留節次
+        renderCourses();
     });
 
     // 清空表單
@@ -94,61 +98,87 @@ document.addEventListener("DOMContentLoaded", function() {
         timeInput.value = '';
     }
 
-    // 渲染課程列表並分配節次
+    // 渲染課程列表
     function renderCourses() {
         courseList.innerHTML = '';
-
         courses.forEach((course, index) => {
-            const courseItem = document.createElement('div');
-            courseItem.className = 'course-item';
-            courseItem.innerHTML = `
-                <strong>節次 ${course.id}: ${course.category} - ${course.subCategory}</strong><br>
-                時間: ${course.time}<br>
-                <button onclick="deleteCourse(${index})" class="btn btn-danger btn-sm">刪除</button>
-                <button onclick="editCourse(${index})" class="btn btn-warning btn-sm">修改</button>
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <th scope="row">${course.id}</th>
+                <td>${course.category}</td>
+                <td>${course.subCategory}</td>
+                <td>${course.time}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editCourse(${index})">修改</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCourse(${index})">刪除</button>
+                </td>
             `;
-            courseList.appendChild(courseItem);
+            courseList.appendChild(row);
         });
     }
 
-    // 刪除課程，並重新渲染節次
-    window.deleteCourse = function(index) {
-        courses.splice(index, 1); // 刪除對應的課程
-        renderCourses(); // 重新渲染課程列表
-    };
-
-    // 編輯課程，保留節次
+    // 編輯課程
     window.editCourse = function(index) {
         const course = courses[index];
-        categorySelect.value = courseData.categories.findIndex(cat => cat.name === course.category);
-        categorySelect.dispatchEvent(new Event('change'));
+        const categoryIndex = courseData.categories.findIndex(cat => cat.name === course.category);
+        modalCategorySelect.value = categoryIndex;
 
+        // 手動觸發 change 事件來更新小類選單
+        modalCategorySelect.dispatchEvent(new Event('change'));
+
+        // 等小類選單填充完後，選擇對應的小類
         setTimeout(() => {
-            subCategorySelect.value = selectedCategory.subCategories.findIndex(sub => sub.name === course.subCategory);
-            timeInput.value = course.time;
-            editingIndex = index; // 設定為編輯模式
-            addCourseBtn.textContent = "保存修改"; // 修改按鈕文字
+            modalSubCategorySelect.value = course.subCategory;
         }, 100);
+
+        modalTimeInput.value = course.time;
+        editingIndex = index;
+        editModal.show(); // 打開 Modal
     };
 
-    // 儲存課表為 JSON 檔案
+    // 保存修改
+    saveEditBtn.addEventListener('click', function() {
+        if (!modalCategorySelect.value || !modalSubCategorySelect.value || !modalTimeInput.value) {
+            alert('請填寫完整的資料');
+            return;
+        }
+
+        const course = {
+            id: courses[editingIndex].id,
+            category: courseData.categories[modalCategorySelect.value].name,
+            subCategory: modalSubCategorySelect.value,
+            time: modalTimeInput.value
+        };
+
+        courses[editingIndex] = course;
+        renderCourses(); // 更新表格
+        editModal.hide(); // 關閉 Modal
+    });
+
+    // 刪除課程
+    window.deleteCourse = function(index) {
+        courses.splice(index, 1);
+        renderCourses();
+    };
+
+    // 儲存 JSON 檔案
     saveJsonBtn.addEventListener('click', function() {
         const dataStr = JSON.stringify(courses, null, 2);
         const blob = new Blob([dataStr], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = '課表.json';
+        link.download = 'courses.json';
         link.click();
-        URL.revokeObjectURL(url); // 釋放URL資源
+        URL.revokeObjectURL(url);
     });
 
-    // 預覽並列印課表為 PDF
+    // 預覽並列印 PDF
     printPdfBtn.addEventListener('click', function() {
-        window.print(); // 使用瀏覽器的列印功能
+        window.print();
     });
 
-    // 讀取本地 JSON 檔案
+    // 讀取 JSON 檔案
     loadJsonBtn.addEventListener('click', function() {
         loadJsonInput.click(); // 模擬點擊隱藏的檔案輸入按鈕
     });
@@ -165,108 +195,11 @@ document.addEventListener("DOMContentLoaded", function() {
             try {
                 const json = JSON.parse(event.target.result);
                 courses = json;
-                renderCourses();
+                renderCourses(); // 重新渲染課程列表
             } catch (e) {
                 alert('檔案格式不正確，請上傳有效的 JSON 檔案');
             }
         };
         reader.readAsText(file);
-    });
-
-    // 維護課表：載入 courses.json 並顯示在表格中
-    maintainCourseBtn.addEventListener('click', function() {
-        fetch('courses.json')
-            .then(response => response.json())
-            .then(data => {
-                courses = data; // 將資料載入 courses 陣列
-                renderMaintainTable(); // 顯示維護課表內容
-                alert('課表已載入，可進行維護');
-            })
-            .catch(error => {
-                console.error('讀取 courses.json 時出錯:', error);
-                alert('無法讀取課表資料，請確認檔案是否存在或格式正確');
-            });
-    });
-
-    // 渲染維護表格
-    function renderMaintainTable() {
-        maintainTableBody.innerHTML = '';
-        courses.forEach((course, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${course.id}</td>
-                <td>${course.category}</td>
-                <td>${course.subCategory}</td>
-                <td>${course.time}</td>
-                <td>
-                    <button class="btn btn-warning btn-sm" onclick="editMaintainCourse(${index})">修改</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteMaintainCourse(${index})">刪除</button>
-                </td>
-            `;
-            maintainTableBody.appendChild(row);
-        });
-    }
-
-    // 新增課程
-    addMaintainCourseBtn.addEventListener('click', function() {
-        const category = document.getElementById('modalCategory').value;
-        const subCategory = document.getElementById('modalSubCategory').value;
-        const time = document.getElementById('modalTime').value;
-        if (!category || !subCategory || !time) {
-            alert('請填寫完整的課程資訊');
-            return;
-        }
-        const course = {
-            id: courses.length + 1,
-            category,
-            subCategory,
-            time
-        };
-        courses.push(course);
-        renderMaintainTable(); // 重新渲染表格
-        alert('課程已新增');
-    });
-
-    // 修改課程
-    window.editMaintainCourse = function(index) {
-        const course = courses[index];
-        document.getElementById('modalCategory').value = course.category;
-        document.getElementById('modalSubCategory').value = course.subCategory;
-        document.getElementById('modalTime').value = course.time;
-        editingIndex = index;
-    };
-
-    saveMaintainBtn.addEventListener('click', function() {
-        if (editingIndex !== -1) {
-            const category = document.getElementById('modalCategory').value;
-            const subCategory = document.getElementById('modalSubCategory').value;
-            const time = document.getElementById('modalTime').value;
-            courses[editingIndex] = { ...courses[editingIndex], category, subCategory, time };
-            renderMaintainTable();
-            editingIndex = -1;
-            alert('課程已修改');
-        } else {
-            alert('未選擇課程進行修改');
-        }
-    });
-
-    // 刪除課程
-    window.deleteMaintainCourse = function(index) {
-        courses.splice(index, 1);
-        renderMaintainTable();
-        alert('課程已刪除');
-    };
-
-    // 儲存修改到 courses.json
-    saveJsonMaintainBtn.addEventListener('click', function() {
-        const dataStr = JSON.stringify(courses, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'courses.json';
-        link.click();
-        URL.revokeObjectURL(url);
-        alert('課表已儲存至 courses.json');
     });
 });

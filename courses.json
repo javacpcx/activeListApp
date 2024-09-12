@@ -1,25 +1,69 @@
 {
   "categories": [
-      {
-          "name": "藝術",
-          "subCategories": [
-              { "name": "繪畫", "description": "學習基礎繪畫技巧" },
-              { "name": "雕塑", "description": "探索雕塑的藝術形式" }
-          ]
-      },
-      {
-          "name": "理科",
-          "subCategories": [
-              { "name": "數學", "description": "學習代數與幾何" },
-              { "name": "物理", "description": "探索物理的基本原理" }
-          ]
-      },
-      {
-          "name": "文學",
-          "subCategories": [
-              { "name": "現代文學", "description": "閱讀並分析現代小說" },
-              { "name": "古典文學", "description": "學習經典文學作品" }
-          ]
-      }
+    {
+      "name": "藝術",
+      "subCategories": [
+        {
+          "name": "繪畫",
+          "description": "學習基礎繪畫技巧"
+        },
+        {
+          "name": "雕塑",
+          "description": "探索雕塑的藝術形式"
+        }
+      ]
+    },
+    {
+      "name": "理科",
+      "subCategories": [
+        {
+          "name": "數學",
+          "description": "學習代數與幾何"
+        },
+        {
+          "name": "物理",
+          "description": "探索物理的基本原理"
+        }
+      ]
+    },
+    {
+      "name": "文學",
+      "subCategories": [
+        {
+          "name": "現代文學",
+          "description": "閱讀並分析現代小說"
+        },
+        {
+          "name": "古典文學",
+          "description": "學習經典文學作品"
+        }
+      ]
+    },
+    {
+      "name": "靜態活動",
+      "subCategories": [
+        {
+          "name": "小手歌",
+          "description": "進行帶動唱"
+        }
+      ]
+    },
+    {
+      "name": "動態活動",
+      "subCategories": [
+        {
+          "name": "心領神會",
+          "description": "閉眼、同時雙手進行數字加總"
+        },
+        {
+          "name": "希望之路",
+          "description": "提供地圖，每個學員只能走一步，錯了就爆，重新出發"
+        }
+      ]
+    },
+    {
+      "name": "AAA",
+      "subCategories": []
+    }
   ]
 }
